@@ -1,0 +1,11 @@
+{
+	"required": true,
+	"package": "smallclockmod.mixin.client",
+	"compatibilityLevel": "JAVA_21",
+	"client": [
+		"ChatClearProtectionMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

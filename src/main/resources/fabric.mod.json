@@ -1,0 +1,41 @@
+{
+	"schemaVersion": 1,
+	"id": "smallclockmod",
+	"version": "${version}",
+	"name": "smallclockmod",
+	"description": "Random stuff",
+	"authors": [
+		"smallclock12"
+	],
+	"contact": {
+		"homepage": "https://github.com/smallclock12/smallclockmod",
+		"sources": "https://github.com/smallclock12/smallclockmod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/smallclockmod/icon.jpg",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"smallclockmod.SmallClockMod"
+		],
+		"client": [
+			"smallclockmod.SmallClockModClient"
+		]
+	},
+	"mixins": [
+		"smallclockmod.mixins.json",
+		{
+			"config": "smallclockmod.client.mixins.json",
+			"environment": "client"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.16.14",
+		"minecraft": "~1.21.4",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
