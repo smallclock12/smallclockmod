@@ -2,13 +2,18 @@ package smallclockmod;
 
 import net.minecraft.text.Text;
 import smallclockmod.config.ConfigManager;
+import smallclockmod.config.Keys;
 
 public class ClientMessages {
-    private static final String DisplayName = ConfigManager.get("DisplayName");
-    public final static String Prefix = "§f[§d"+DisplayName+"§f]§r ";
-    public final static Text CommandCompleteMessage = New("Command Complete");
 
     public static Text New(String message) {
-        return Text.literal(Prefix + "§f" + message + "§r");
+        return Text.literal(Prefix() + "§" + ConfigManager.get(Keys.PRIMARY_COLOUR) + message + "§r");
+    }
+
+    public static String Prefix() {
+        var p = ConfigManager.get(Keys.PRIMARY_COLOUR);
+        var s = ConfigManager.get(Keys.SECONDARY_COLOUR);
+        var d = ConfigManager.get(Keys.DISPLAY_NAME);
+        return String.format("§%s[§%s%s§%s]§r ", p, s, d, p);
     }
 }

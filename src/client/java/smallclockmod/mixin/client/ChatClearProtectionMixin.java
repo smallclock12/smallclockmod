@@ -12,6 +12,9 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import smallclockmod.SmallClockMod;
+import smallclockmod.config.ConfigManager;
+import smallclockmod.config.Toggles;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -38,6 +41,10 @@ public class ChatClearProtectionMixin {
 	@Inject(at = @At("HEAD"), method = "addMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/message/MessageSignatureData;Lnet/minecraft/client/gui/hud/MessageIndicator;)V", cancellable = true)
 	private void init(Text message, MessageSignatureData signatureData, MessageIndicator indicator, CallbackInfo ci) {
 
+        if (!ConfigManager.isToggled(Toggles.CHAT_CLEAR_PROTECTION)) {
+            return;
+        }
+
         String loggedName = "";
         if (indicator != null)
             loggedName = indicator.loggedName();
@@ -59,6 +66,7 @@ public class ChatClearProtectionMixin {
                 if (trySendClearedMessage(p.score()) >= ChatClearThreshold) {
                     // Cancel messages if over threshold
                     ci.cancel();
+                    SmallClockMod.LOGGER.info("Filtered Message: {}", message.getString());
                 };
                 return;
             }

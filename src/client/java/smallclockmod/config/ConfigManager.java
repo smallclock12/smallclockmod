@@ -1,8 +1,6 @@
 package smallclockmod.config;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import net.fabricmc.loader.api.FabricLoader;
 import smallclockmod.SmallClockMod;
 
@@ -10,18 +8,55 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Dictionary;
-import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@SuppressWarnings({"unchecked", "CallToPrintStackTrace"})
 public class ConfigManager {
-    private static Dictionary<String, String> store;
+
+    private static Path path;
     private static final AtomicBoolean loaded = new AtomicBoolean(false);
     private static final AtomicBoolean loading = new AtomicBoolean(false);
     private static final AtomicBoolean saving = new AtomicBoolean(false);
-    private static Path path;
+    private static final Gson GSON = new Gson();
+
+    private final static Map<String, String> configDefaults = Map.of(
+            Keys.DISPLAY_NAME, "SmallClockMod",
+            Keys.PRIMARY_COLOUR, "f",
+            Keys.SECONDARY_COLOUR, "d",
+            combine(Keys.TOGGLE, Toggles.CHAT_CLEAR_PROTECTION), "1"
+    );
+
+    private final static Map<String, String> config = new HashMap<>(configDefaults);
+
+    public static String combine(String... keys) {
+        return String.join(Keys.SEPARATOR, keys);
+    }
+
+    public static boolean isToggled(String key) {
+        var value = get(combine(Keys.TOGGLE, key));
+        return value.equals("1");
+    }
+
+    public static boolean toggle(String key) {
+        var toggled = isToggled(key);
+        var newValue = "0";
+        if (!toggled)
+            newValue = "1";
+
+        set(combine(Keys.TOGGLE, key), newValue);
+        return !toggled;
+    }
+
+    public static String get(String key) {
+        load();
+        return config.get(key);
+    }
+
+    public static void set(String key, String value) {
+        load();
+        config.put(key, value);
+        save();
+    }
 
     private static Path path() {
         if (path == null) {
@@ -32,14 +67,12 @@ public class ConfigManager {
     }
 
     private static void save() {
-
-        JsonObject json = new JsonObject();
+        var json = new JsonObject();
         try {
             saving.compareAndExchangeAcquire(false, true);
-            for (Enumeration<String> s = store.keys(); s.hasMoreElements();) {
-                String element = s.nextElement();
-                String value = store.get(element);
-                json.add(element, JsonParser.parseString(value));
+            for (String key : config.keySet()) {
+                var value = config.get(key);
+                json.add(key, JsonParser.parseString(value));
             }
         } catch(Exception ex) {
             System.err.println("Error saving config file");
@@ -50,7 +83,7 @@ public class ConfigManager {
             fileWriter.write(jsonString);
         } catch (Exception e) {
             System.err.println("Error saving config file");
-            e.printStackTrace();
+            System.err.print(e.getMessage());
         }
 
         saving.compareAndExchangeRelease(true, false);
@@ -63,34 +96,22 @@ public class ConfigManager {
 
         try {
             if (!Files.exists(path())) {
-                store = (Hashtable<String, String>)ConfigDefaults.getConfigDefault().clone();
                 save();
             } else {
                 BufferedReader br = Files.newBufferedReader(path());
-                JsonObject json = JsonParser.parseReader(br).getAsJsonObject();
-                store = new Hashtable<>();
-
-                for (java.util.Map.Entry<String, JsonElement> j : json.entrySet()) {
-                    store.put(j.getKey(), j.getValue().getAsString());
+                var json = JsonParser.parseReader(br).getAsJsonObject();
+                var map = new HashMap<String, String>();
+                for (var j : json.entrySet()) {
+                    map.put(j.getKey(), j.getValue().getAsString());
                 }
+                config.putAll(map);
             }
         } catch (Exception e) {
             System.err.println("Error loading config file");
-            e.printStackTrace();
+            System.err.print(e.getMessage());
         }
 
         loading.setRelease(false);
         loaded.setRelease(true);
-    }
-
-    public static String get(String key) {
-        load();
-        return store.get(key);
-    }
-
-    public static void set(String key, String value) {
-        load();
-        store.put(key, value);
-        save();
     }
 }
