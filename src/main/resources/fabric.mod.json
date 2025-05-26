@@ -12,7 +12,7 @@
 		"sources": "https://github.com/smallclock12/smallclockmod"
 	},
 	"license": "CC0-1.0",
-	"icon": "assets/smallclockmod/icon.jpg",
+	"icon": "assets/smallclockmod/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
